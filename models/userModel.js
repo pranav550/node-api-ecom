@@ -7,6 +7,7 @@ const user = mongoose.Schema({
     image:{type:String, required:true},
     mobile:{type:String, required:true},
     type:{type:Number, required:true},
+    token:{type:String, default:''}
 })
 
 module.exports = mongoose.model("User", user);

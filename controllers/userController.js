@@ -2,6 +2,8 @@ const User = require("../models/userModel");
 const bcryptjs = require("bcryptjs");
 const jwt = require('jsonwebtoken');
 const config = require("../config/config");
+const nodemailer = require("nodemailer");
+const randomstring = require("randomstring");
 
 const securePassword = async(password)=>{
     try{
@@ -54,10 +56,8 @@ const user_login = async (req, res)=>{
         const password = req.body.password;
 
       const is_exist=await User.findOne({email:email});
-      console.log("1",is_exist)
       if(is_exist){
        const password_match= await bcryptjs.compare(password,is_exist.password);
-       console.log("2",password_match)
        const token_data  = await createToken(is_exist.id)
        if(password_match){
         const user_data = {
@@ -105,4 +105,79 @@ const update_password = async(req,res)=>{
     }
 }
 
-module.exports = {register_user, user_login,update_password}
+const forget_password = async (req,res)=>{
+    try{
+
+        const email = req.body.email;
+        const is_exist = await User.findOne({email:email});
+        if(is_exist){
+            const randomString =  randomstring.generate();
+            const data = await User.updateOne({email:email}, {$set:{token:randomString}});
+            sendResetPasswordMail(is_exist.name,is_exist.email,randomString)
+            res.status(200).send({success:true, message:"Please Check Your Inbox.Reset Your Password"});    
+        }else{
+            res.status(200).send({success:false, message:"Email does not exist"});    
+        }
+    }catch(error){
+        res.status(400).send(error.message);
+    }
+}
+
+const sendResetPasswordMail = async(name,email,token)=>{
+     try{
+        const transporter = nodemailer.createTransport({
+                service:'gmail',
+                host: 'smtp.gmail.com',
+                port: 587,
+                secure: false,
+                requireTLS:true,
+            
+            auth: {
+              user: config.emailUser,
+              pass: config.emailPassword
+            }
+          });
+          
+          const mailOptions = {
+            from: config.emailUser,
+            to: email,
+            subject: 'For Reset Password',
+            html: '<p>Hi '+name+', Please Copy Link And <a href="http://localhost:3000/api/reset-password?token='+token+'">Reset Your Password</a> </p>'
+          };
+          
+          transporter.sendMail(mailOptions, function(error, info){
+            if (error) {
+              console.log(error);
+            } else {
+              console.log('Email Has Been Sent:-',info.response);
+            }
+          });
+     }catch(error){
+        res.status(400).send({success:false, msg:error.message});
+     }
+}
+
+const reset_password = async(req,res)=>{
+    try{
+         const token = req.query.token;
+         const tokenData = await User.findOne({token:token});
+         if(tokenData){
+          const password = req.body.password;
+          const newPassword = await securePassword(password);
+          const userData = await User.findByIdAndUpdate({_id:tokenData._id},{$set:{password:newPassword, token:''}},{new:true} );
+          res.status(200).send({success:true, msg:"User PAssword Has been Reset",data:userData}); 
+         }else{
+            res.status(200).send({success:false, msg:"This link has been expired"}); 
+         }
+    }catch(error){
+        res.status(400).send({success:false, msg:error.message});
+    }
+}
+
+module.exports = {
+     register_user,
+     user_login,
+     update_password,
+     forget_password,
+     reset_password
+    }

@@ -1,5 +1,8 @@
 const config = {
-    secret_key:"secret"
+    secret_key:"secret",
+    emailUser:'',
+    emailPassword:'',
+    //emailPassword:"diltjytcqvpgcypv"
 }
 
 module.exports = config
