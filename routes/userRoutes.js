@@ -38,6 +38,7 @@ user_route.get('/test',auth,function(req,res){
 user_route.put('/update_password',auth,user_controller.update_password )
 user_route.post('/forget-password',user_controller.forget_password)
 user_route.get('/reset-password',user_controller.reset_password)
+user_route.post('/refresh-token',auth,user_controller.refresh_token);
 
 module.exports = user_route;
 

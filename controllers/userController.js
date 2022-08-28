@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const config = require("../config/config");
 const nodemailer = require("nodemailer");
 const randomstring = require("randomstring");
+const fs = require("fs");
 
 const securePassword = async(password)=>{
     try{
@@ -42,7 +43,7 @@ const register_user = async(req,res)=>{
 
 const createToken = async(id)=>{
     try{
-        const tokren = await jwt.sign({ _id: id }, config.secret_key);
+        const tokren = await jwt.sign({ _id: id }, config.secret_key,{expiresIn:'1h'});
         return tokren;
     }catch(error){
         res.status(400).send(error.message);
@@ -174,10 +175,51 @@ const reset_password = async(req,res)=>{
     }
 }
 
+const renew_token = async (id)=>{
+  try{
+    const secret_jwt = config.secret_key;
+    const newSecretJwt = randomstring.generate();
+    fs.readFile('config/config.js','utf-8',function(err,data){
+       if(err) throw err;
+      const newValue = data.replace(new RegExp(secret_jwt,"g"),newSecretJwt );
+      fs.writeFile('config/config.js', newValue,'utf-8', function(err,data){
+        if(err) throw err;
+        console.log("Done!")
+      })
+    })
+    const token = await jwt.sign({_id:id},newSecretJwt,{expiresIn:'24h'});
+    return token;
+
+  }catch(error){
+    res.status(400).send({success:false, message:error.message});
+  }
+}
+
+
+const refresh_token = async(req, res)=>{
+  try{
+   const user_id = req.body.user_id;
+   const userId_exist = await User.findById({_id:user_id});
+   if(userId_exist){
+      const tokenData = await renew_token(user_id);
+      const response = {
+        user_id:user_id,
+        token:tokenData
+      }
+      res.status(200).send({success:true, message:"Refresh Token Details",data:response}); 
+   }else{
+    res.status(200).send({success:false, message:"UserId does not exist"}); 
+   }
+  }catch(error){
+    res.status(400).send({success:false, message:error.message});
+  }
+}
+
 module.exports = {
      register_user,
      user_login,
      update_password,
      forget_password,
-     reset_password
+     reset_password,
+     refresh_token
     }
