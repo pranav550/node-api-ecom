@@ -30,6 +30,7 @@ const auth = require("../middleware/auth");
 const productController = require("../controllers/productController");
 
 product_route.post('/add-product', upload.array('images'), auth, productController.add_product)
+product_route.get('/get-products', auth, productController.getProducts)
 
 module.exports = product_route;
 

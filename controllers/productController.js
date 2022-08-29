@@ -1,4 +1,6 @@
 const Product = require("../models/productModel");
+const CategoryController = require("../controllers/categoryController");
+const StoreController = require("../controllers/storeController"); 
 
 const add_product = async(req,res)=>{
 try{
@@ -27,6 +29,47 @@ try{
 }
 }
 
+const getProducts =  async (req,res)=>{
+    try{
+      var send_Data = [];
+      var cat_data = await CategoryController.get_categories();
+      
+      if(cat_data.length>0){
+          for(let i=0; i<=cat_data.length; i++){
+            var product_data=[];
+            let cat_id = cat_data[i]['_id'].toString();
+            var cat_product = await Product.find({category_id:cat_id});
+            if(cat_product.length>0){
+                for(let j=0; j<cat_product.length;j++){
+                 var storeData = await StoreController.get_store(cat_product[j]['store_id']);
+                 product_data.push(
+                    {
+                        "product_name":cat_product[j]['name'],
+                        "images":cat_product[j]['images'],
+                        "store_address":storeData.address
+                    }
+                    )
+                }
+                send_Data.push({
+                    "category":cat_data[i]['category'],
+                    "product":product_data
+                })
+            }
+           
+            else{
+                res.send(200).send({success:true,msg:"Product Details", data:send_Data})  
+            }
+          }
+          res.send(200).send({success:true,msg:"Product Details", data:send_Data})
+      }else{
+        res.status(200).send({success:false,message:error.message})
+      }
+    }catch(error){
+       return res.status(400).send({success:false,message:"Product Details",data:send_Data})
+    }
+} 
+
 module.exports={
-    add_product
+    add_product,
+    getProducts
 }

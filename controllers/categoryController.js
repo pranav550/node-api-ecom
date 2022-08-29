@@ -34,6 +34,17 @@ const addCategory = async(req,res)=>{
     }
 }
 
+
+const get_categories = async (req, res)=>{
+    try{
+        return Category.find();
+    } catch(error){
+        res.status(400).send({success:false,message:error.message})
+    }
+
+}
+
 module.exports = {
-    addCategory
+    addCategory,
+    get_categories
 }

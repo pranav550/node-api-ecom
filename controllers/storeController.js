@@ -37,6 +37,16 @@ const create_Store = async(req,res)=>{
     }
 }
 
+const get_store = async(id)=>{
+  try{
+    return Store.findOne({_id:id});
+  }catch(error){
+    res.status(400).send({success:false, message:error.message})
+  }
+  
+}
+
 module.exports = {
-     create_Store   
+     create_Store,
+     get_store   
 }
