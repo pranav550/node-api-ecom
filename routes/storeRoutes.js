@@ -30,6 +30,7 @@ const auth = require("../middleware/auth");
 const StoreController =  require('../controllers/storeController')
 
 store_route.post('/create-store',auth, upload.single('logo'),StoreController.create_Store);
+store_route.post('/find-nearest-store',auth,StoreController.findNearstStore);
 
 
 module.exports = store_route;

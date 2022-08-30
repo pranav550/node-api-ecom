@@ -46,7 +46,30 @@ const get_store = async(id)=>{
   
 }
 
+const findNearstStore = async(req, res)=>{
+  try{
+    const latitude = req.body.latitude;
+    const longitude = req.body.longitude;
+
+  const store_data = await Store.aggregate([
+      {
+        $geoNear:{
+          near:{type:"Point", coordinates:[parseFloat(latitude),parseFloat(longitude)]},
+          key:"location",
+          maxDistance:parseFloat(10000)*1609,
+          distanceField:"dist.calculated",
+          spherical:true
+        }
+      }
+    ])
+    res.status(200).send({success:true,message:"store details",data:store_data})
+  }catch(error){
+    return res.status(400).send({success:false,message:error.message})
+  }
+}
+
 module.exports = {
      create_Store,
-     get_store   
+     get_store,
+     findNearstStore   
 }
