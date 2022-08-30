@@ -31,6 +31,7 @@ const productController = require("../controllers/productController");
 
 product_route.post('/add-product', upload.array('images'), auth, productController.add_product)
 product_route.get('/get-products', auth, productController.getProducts)
+product_route.get('/search-product', auth, productController.searchproduct)
 
 module.exports = product_route;
 
