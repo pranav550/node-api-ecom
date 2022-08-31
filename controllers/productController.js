@@ -84,8 +84,45 @@ try{
 }
 }
 
+const paginate = async(req,res)=>{
+  try{
+     let page = req.body.page;
+     let perpage = req.body.perpage;
+     //let sort = req.body.sort;
+     let sortBy = req.body.sortBy;
+     let orderBy = req.body.orderBy=="asc"?1:-1;
+     let obj = {};
+     let product_data;
+     let skip;
+     let customSort;
+     if(page<=1){
+      skip=0;
+     }else{
+      skip = (page-1)*perpage
+     }
+     if(sortBy){
+       //if(sortBy){
+        customSort={
+          [sortBy.toLowerCase().trim()]:orderBy
+        }
+     // }
+      console.log(customSort)
+
+      product_data = await Product.find().sort(customSort).skip(skip).limit(perpage);
+     }else{
+      product_data = await Product.find().skip(skip).limit(perpage);
+     }
+
+     return res.status(200).send({success:true,message:"Product Details", data:product_data}) 
+
+  }catch(error){
+    return res.status(400).send({success:false,message:error.message})
+  }
+}
+
 module.exports={
     add_product,
     getProducts,
-    searchproduct
+    searchproduct,
+    paginate
 }
