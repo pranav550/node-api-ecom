@@ -9,12 +9,17 @@ const store_routes = require('./routes/storeRoutes');
 const category_routes = require('./routes/categoryRoutes');
 const subCategory_routes = require('./routes/subCategoryRoutes');
 const product_routes = require("./routes/productRoutes");
+const common_routes = require("./routes/commonRoutes");
+const cart_routes = require("./routes/cartRoutes");
+
 
 app.use('/api',user_routes);
 app.use('/api',store_routes);
 app.use('/api',category_routes);
 app.use('/api',subCategory_routes);
 app.use('/api',product_routes);
+app.use('/api',common_routes);
+app.use('/api',cart_routes)
 
 app.listen(3000,()=>{
     console.log("server is ready")
